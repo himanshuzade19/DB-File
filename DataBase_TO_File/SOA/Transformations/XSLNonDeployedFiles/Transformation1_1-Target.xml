@@ -1,0 +1,33 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<ns0:CreditcardinfoCollection xmlns:jca="http://xmlns.oracle.com/pcbpel/wsdl/jca/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://xmlns.oracle.com/pcbpel/adapter/db/Application1/DataBase_TO_File/DB_Select" xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:ns0="http://xmlns.oracle.com/pcbpel/adapter/db/top/DB_Select">
+   <ns0:Creditcardinfo>
+      <ns0:ssn>string2</ns0:ssn>
+      <ns0:firstName>string3</ns0:firstName>
+      <ns0:lastName>string5</ns0:lastName>
+      <ns0:ccnumber>string7</ns0:ccnumber>
+      <ns0:creditrating>9</ns0:creditrating>
+      <ns0:status>string10</ns0:status>
+      <ns0:accountNo>string12</ns0:accountNo>
+      <ns0:bankName>string14</ns0:bankName>
+   </ns0:Creditcardinfo>
+   <ns0:Creditcardinfo>
+      <ns0:ssn>string3</ns0:ssn>
+      <ns0:firstName>string18</ns0:firstName>
+      <ns0:lastName>string20</ns0:lastName>
+      <ns0:ccnumber>string22</ns0:ccnumber>
+      <ns0:creditrating>24</ns0:creditrating>
+      <ns0:status>string25</ns0:status>
+      <ns0:accountNo>string27</ns0:accountNo>
+      <ns0:bankName>string29</ns0:bankName>
+   </ns0:Creditcardinfo>
+   <ns0:Creditcardinfo>
+      <ns0:ssn>string4</ns0:ssn>
+      <ns0:firstName>string33</ns0:firstName>
+      <ns0:lastName>string35</ns0:lastName>
+      <ns0:ccnumber>string37</ns0:ccnumber>
+      <ns0:creditrating>39</ns0:creditrating>
+      <ns0:status>string40</ns0:status>
+      <ns0:accountNo>string42</ns0:accountNo>
+      <ns0:bankName>string44</ns0:bankName>
+   </ns0:Creditcardinfo>
+</ns0:CreditcardinfoCollection>

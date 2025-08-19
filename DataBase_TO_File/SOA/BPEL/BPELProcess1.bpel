@@ -1,0 +1,112 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Fri May 30 19:20:52 IST 2025
+  Author:  DAFIT005
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="BPELProcess1"
+               targetNamespace="http://xmlns.oracle.com/Application1/DataBase_TO_File/BPELProcess1"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/Application1/DataBase_TO_File/BPELProcess1"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/Application1/DataBase_TO_File/DB_Select"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/file/Application1/DataBase_TO_File/Write_File"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/top/DB_Select"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:ess="http://xmlns.oracle.com/scheduler" xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap">
+
+  <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/Application1/DataBase_TO_File/BPELProcess1" location="../WSDLs/BPELProcess1.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="bpelprocess1_client" partnerLinkType="client:BPELProcess1" myRole="BPELProcess1Provider"/>
+    <partnerLink name="DB_Select" partnerLinkType="ns1:DB_Select_plt" partnerRole="DB_Select_role"/>
+    <partnerLink name="Write_File" partnerLinkType="ns2:Write_plt" partnerRole="Write_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:BPELProcess1RequestMessage"/>
+    <variable name="Invoke_DB_Select_DB_SelectSelect_InputVariable" messageType="ns1:DB_SelectSelect_inputParameters"/>
+    <variable name="Invoke_DB_Select_DB_SelectSelect_OutputVariable" messageType="ns1:CreditcardinfoCollection_msg"/>
+    <variable name="Invoke_Write_File_Write_InputVariable" messageType="ns2:Write_msg"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in BPELProcess1.wsdl) -->
+    <receive name="receiveInput" partnerLink="bpelprocess1_client" portType="client:BPELProcess1" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="AssignToDB" validate="yes">
+      <copy>
+        <from>$inputVariable.payload/client:input</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_DB_Select_DB_SelectSelect_InputVariable.DB_SelectSelect_inputParameters/ns3:ccnb</to>
+      </copy>
+    </assign>
+    <invoke name="Invoke_DB_Select" partnerLink="DB_Select" portType="ns1:DB_Select_ptt"
+            operation="DB_SelectSelect" inputVariable="Invoke_DB_Select_DB_SelectSelect_InputVariable"
+            outputVariable="Invoke_DB_Select_DB_SelectSelect_OutputVariable" bpelx:invokeAsDetail="no"/>
+    <if name="If1">
+      <condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_DB_Select_DB_SelectSelect_OutputVariable.CreditcardinfoCollection/ns3:Creditcardinfo/ns3:status='VALID'</condition>
+      <sequence>
+        <assign name="Transformation_DB_to_File">
+          <bpelx:annotation>
+            <bpelx:pattern patternName="bpelx:transformation"></bpelx:pattern>
+          </bpelx:annotation>
+          <copy>
+            <from>ora:doXSLTransformForDoc("../Transformations/Transformation1_1.xsl", $Invoke_DB_Select_DB_SelectSelect_OutputVariable.CreditcardinfoCollection)</from>
+            <to variable="Invoke_Write_File_Write_InputVariable" part="body"/>
+          </copy>
+        </assign>
+        <invoke name="Invoke_Write_File" partnerLink="Write_File" portType="ns2:Write_ptt" operation="Write"
+                inputVariable="Invoke_Write_File_Write_InputVariable" bpelx:invokeAsDetail="no"/>
+      </sequence>
+      <else>
+        <assign name="Assign1">
+          <copy>
+            <from>'Invalid Card'</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_Write_File_Write_InputVariable.body/ns3:Creditcardinfo/ns3:status</to>
+          </copy>
+        </assign>
+      </else>
+    </if>
+  </sequence>
+</process>
